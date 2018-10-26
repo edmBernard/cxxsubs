@@ -1,8 +1,4 @@
-project(tenebris)
-
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
+project(cxxsubs)
 
 #**************************************************************************************************
 # General cMake settings
@@ -32,7 +28,7 @@ add_compile_options(-std=c++17 -Wall)
 #**************************************************************************************************
 # Make configuration
 #**************************************************************************************************
-add_executable(naval_fate ${SOURCES} src/example.cpp)
+add_executable(example ${SOURCES} src/example.cpp)
 add_executable(quickstart ${SOURCES} src/quickstart.cpp)
 
 #**************************************************************************************************
