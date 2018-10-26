@@ -26,9 +26,8 @@ class OptionsInit : public cxxsubs::IOptions {
 public:
   OptionsInit()
       : cxxsubs::IOptions({"init"}, "Initialise repository") {
-    // clang-format off
-    this->options.positional_help("[optional args]").show_positional_help();
 
+    // clang-format off
     this->options.add_options()
       ("m, module", "module name", cxxopts::value<std::string>()->default_value("my_module"))
       ("help", "Print help");
@@ -66,6 +65,7 @@ The Example aim to produce the following command
 ```bash
 naval_fate ship new <name>...
 naval_fate ship shoot <x> <y>
+naval_fate ship move <name> <x> <y>
 naval_fate mine set <x> <y> [--moored|--drifting]
 navel_fate mine remove <x> <y>
 ```

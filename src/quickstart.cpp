@@ -7,8 +7,6 @@ public:
   OptionsInit()
       : cxxsubs::IOptions({"init"}, "Initialise repository") {
     // clang-format off
-    this->options.positional_help("[optional args]").show_positional_help();
-
     this->options.add_options()
       ("m, module", "module name", cxxopts::value<std::string>()->default_value("my_module"))
       ("help", "Print help");
