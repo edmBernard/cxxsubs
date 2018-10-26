@@ -19,7 +19,7 @@
 namespace cxxsubs {
 
 struct my_functor {
-  template<class T>
+  template<typename T>
   bool operator()(T&& t, int argc, char *argv[]) {
     if (t.match(argc, argv)) {
       t.parse(argc, argv);
@@ -29,16 +29,16 @@ struct my_functor {
   }
 };
 
-template <typename T, std::size_t... Is>
-void for_each(T &&t, std::index_sequence<Is...>, int argc, char *argv[]) {
-  auto l = {my_functor()(std::get<Is>(t), argc, argv)...};
-  static_cast<void>(l);  // just to remove l unused
+template <typename T, std::size_t... Indices, typename Function>
+void for_each_impl(T &&t, std::index_sequence<Indices...>, Function&& f, int argc, char *argv[]) {
+  auto l = {f(std::get<Indices>(t), argc, argv)...};
+  static_cast<void>(l);  // just to remove l unused warning
 }
 
-template<typename... Ts>
-void for_each_in_tuple(std::tuple<Ts...> & t, int argc, char *argv[])
+template<typename... Types, typename Function>
+void for_each(std::tuple<Types...> & t, Function&& f, int argc, char *argv[])
 {
-    for_each(t, std::index_sequence_for<Ts...>(), argc, argv);
+    for_each_impl(t, std::index_sequence_for<Types...>(), f, argc, argv);
 }
 
 class IOptions {
@@ -79,12 +79,12 @@ protected:
   std::unique_ptr<cxxopts::ParseResult> parsing_result;
 };
 
-template <class... OptionsTypes> class Verbs {
+template <typename... OptionsTypes> class Verbs {
 public:
   Verbs(int argc, char *argv[]) {this->parse(argc, argv);}
 
   void parse(int argc, char *argv[]) {
-    for_each_in_tuple(this->parsers, argc, argv);
+    for_each(this->parsers, my_functor(), argc, argv);
   }
 
 private:

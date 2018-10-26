@@ -7,7 +7,7 @@ The design was inspire by this [C# library](https://github.com/commandlineparser
 ## Design
 
 
-## Quick Start Examples
+## Examples
 
 1. Create separate option classes for each verb. Class have to work like IOptions.
 1. Call cxxsubs::Verbs with all the verb options classes in template parameters.
@@ -47,8 +47,7 @@ C++ Main:
 
 ```cpp
 int main(int argc, char *argv[]) {
-    cxxsubs::Verbs<OptionsInit> my_cli_parser;
-    my_cli_parser.parse();
+    cxxsubs::Verbs<OptionsInit, OptionsDevAdd>(argc, argv);
 }
 ```
 
