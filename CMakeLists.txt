@@ -32,7 +32,8 @@ add_compile_options(-std=c++17 -Wall)
 #**************************************************************************************************
 # Make configuration
 #**************************************************************************************************
-add_executable(example ${SOURCES} src/example.cpp)
+add_executable(naval_fate ${SOURCES} src/example.cpp)
+add_executable(quickstart ${SOURCES} src/quickstart.cpp)
 
 #**************************************************************************************************
 # Test configuration
