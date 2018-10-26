@@ -46,18 +46,18 @@ public:
   void exec() {
     std::cout << "debug init" << std::endl;
 
-    // std::cout << "width :" << (*this->parsing_result)["width"].as<int>() << std::endl;
-    // std::cout << "name :" << ((*this->parsing_result).count("name") ? (*this->parsing_result)["name"].as<std::string>() : "") << std::endl;
-    // std::cout << "doIt :" << (*this->parsing_result)["doit"].as<bool>() << std::endl;
+    std::cout << "width :" << (*this->parsing_result)["width"].as<int>() << std::endl;
+    std::cout << "name :" << ((*this->parsing_result).count("name") ? (*this->parsing_result)["name"].as<std::string>() : "") << std::endl;
+    std::cout << "doIt :" << (*this->parsing_result)["doit"].as<bool>() << std::endl;
 
-    // if ((*this->parsing_result).count("command")) {
-    //   for (auto&& i : (*this->parsing_result)["command"].as< std::vector<std::string>>()) {
-    //     std::cout << "command :" << i << std::endl;
-    //   }
-    // }
+    if ((*this->parsing_result).count("command")) {
+      for (auto&& i : (*this->parsing_result)["command"].as< std::vector<std::string>>()) {
+        std::cout << "command :" << i << std::endl;
+      }
+    }
 
-    // std::cout << "showHelp :" << (*this->parsing_result).count("help") << std::endl;
-    // std::cout << "test :" << 1 << std::endl;
+    std::cout << "showHelp :" << (*this->parsing_result).count("help") << std::endl;
+    std::cout << "test :" << 1 << std::endl;
   };
 };
 
@@ -88,18 +88,5 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-  std::cout << "debug1" << std::endl;
-  OptionsInit myInitOptions;
-  OptionsDevAdd myDevAddOptions;
-  std::cout << "myInitOptions.match(argc, argv) :" << myInitOptions.match(argc, argv) << std::endl;
-  std::cout << "debug1.1" << std::endl;
-  myInitOptions.parse(argc, argv);
-  std::cout << "myDevAddOptions.match(argc, argv) :" << myDevAddOptions.match(argc, argv) << std::endl;
-  myDevAddOptions.parse(argc, argv);
-
-  std::cout << "debug2" << std::endl;
-  cxxsubs::Verbs<OptionsInit, OptionsDevAdd> my_verbs;
-  // my_verbs.parse(argc, argv);
-  my_verbs.parse();
-  std::cout << "debug3" << std::endl;
+  cxxsubs::Verbs<OptionsInit, OptionsDevAdd>(argc, argv);
 }

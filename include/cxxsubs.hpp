@@ -20,22 +20,25 @@ namespace cxxsubs {
 
 struct my_functor {
   template<class T>
-  bool operator()(T&& t) {
-    t.exec();
+  bool operator()(T&& t, int argc, char *argv[]) {
+    if (t.match(argc, argv)) {
+      t.parse(argc, argv);
+      t.exec();
+    }
     return true;
   }
 };
 
 template <typename T, std::size_t... Is>
-void for_each(T &&t, std::index_sequence<Is...>) {
-  auto l = {my_functor()(std::get<Is>(t))...};
+void for_each(T &&t, std::index_sequence<Is...>, int argc, char *argv[]) {
+  auto l = {my_functor()(std::get<Is>(t), argc, argv)...};
   static_cast<void>(l);  // just to remove l unused
 }
 
 template<typename... Ts>
-void for_each_in_tuple(std::tuple<Ts...> & t)
+void for_each_in_tuple(std::tuple<Ts...> & t, int argc, char *argv[])
 {
-    for_each(t, std::index_sequence_for<Ts...>());
+    for_each(t, std::index_sequence_for<Ts...>(), argc, argv);
 }
 
 class IOptions {
@@ -78,10 +81,10 @@ protected:
 
 template <class... OptionsTypes> class Verbs {
 public:
-  Verbs() { std::cout << "this->length :" << this->length << std::endl; }
+  Verbs(int argc, char *argv[]) {this->parse(argc, argv);}
 
-  void parse() {
-    for_each_in_tuple(this->parsers);
+  void parse(int argc, char *argv[]) {
+    for_each_in_tuple(this->parsers, argc, argv);
   }
 
 private:
