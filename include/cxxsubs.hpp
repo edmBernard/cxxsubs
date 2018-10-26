@@ -19,32 +19,39 @@
 namespace cxxsubs {
 
 struct my_functor {
-  template<typename T>
-  bool operator()(T&& t, int argc, char *argv[]) {
+  template <typename T>
+  bool operator()(T &&t, int argc, char *argv[]) {
     if (t.match(argc, argv)) {
       t.parse(argc, argv);
       t.exec();
+      return true;
     }
-    return true;
+    return false;
+
   }
 };
 
+// template <typename T, std::size_t... Indices, typename Function>
+// std::vector<bool> for_each_impl(T &&t, std::index_sequence<Indices...>, Function&& f, int argc, char *argv[]) {
+//   return {f(std::get<Indices>(t), argc, argv)...};
+//   // static_cast<void>(l);  // just to remove l unused warning
+// }
 template <typename T, std::size_t... Indices, typename Function>
-void for_each_impl(T &&t, std::index_sequence<Indices...>, Function&& f, int argc, char *argv[]) {
-  auto l = {f(std::get<Indices>(t), argc, argv)...};
-  static_cast<void>(l);  // just to remove l unused warning
+auto for_each_impl(T &&t, std::index_sequence<Indices...>, Function &&f, int argc, char *argv[]) -> std::vector<decltype(f(std::get<0>(t), argc, argv))> {
+  return {f(std::get<Indices>(t), argc, argv)...};
 }
 
-template<typename... Types, typename Function>
-void for_each(std::tuple<Types...> & t, Function&& f, int argc, char *argv[])
-{
-    for_each_impl(t, std::index_sequence_for<Types...>(), f, argc, argv);
+template <typename... Types, typename Function>
+auto for_each(std::tuple<Types...> &t, Function &&f, int argc, char *argv[]) {
+  return for_each_impl(t, std::index_sequence_for<Types...>(), f, argc, argv);
 }
 
 class IOptions {
 public:
-  IOptions() {}
-  ~IOptions() {}
+  IOptions() {
+  }
+  ~IOptions() {
+  }
 
   bool match(int argc, char *argv[]) {
     verbs_match = std::vector<bool>(false, verbs.size());
@@ -79,12 +86,18 @@ protected:
   std::unique_ptr<cxxopts::ParseResult> parsing_result;
 };
 
-template <typename... OptionsTypes> class Verbs {
+template <typename... OptionsTypes>
+class Verbs {
 public:
-  Verbs(int argc, char *argv[]) {this->parse(argc, argv);}
+  Verbs(int argc, char *argv[]) {
+    this->parse(argc, argv);
+  }
 
   void parse(int argc, char *argv[]) {
-    for_each(this->parsers, my_functor(), argc, argv);
+    auto ret = for_each(this->parsers, my_functor(), argc, argv);
+    for (auto&& i : ret) {
+      std::cout << "i :" << i << std::endl;
+    }
   }
 
 private:
