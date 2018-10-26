@@ -18,8 +18,6 @@
 
 namespace cxxsubs {
 
-namespace detail {
-
 struct my_functor {
   template<class T>
   bool operator()(T&& t) {
@@ -37,10 +35,8 @@ void for_each(T &&t, std::index_sequence<Is...>) {
 template<typename... Ts>
 void for_each_in_tuple(std::tuple<Ts...> & t)
 {
-    detail::for_each(t, std::index_sequence_for<Ts...>());
+    for_each(t, std::index_sequence_for<Ts...>());
 }
-
-} // namespace detail
 
 class IOptions {
 public:
@@ -85,12 +81,11 @@ public:
   Verbs() { std::cout << "this->length :" << this->length << std::endl; }
 
   void parse() {
-    detail::for_each_in_tuple(this->parsers);
+    for_each_in_tuple(this->parsers);
   }
 
 private:
   std::tuple<OptionsTypes...> parsers;
-  // std::vector<IOptions> parsers = {OptionsTypes...};
   std::size_t length = sizeof...(OptionsTypes);
 };
 
