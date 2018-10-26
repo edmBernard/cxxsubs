@@ -1,6 +1,7 @@
 # cxxsubs
 
-Lightweight C++ command line Subcommand (Verbs) Parser it use [cxxopts](https://github.com/jarro2783/cxxopts) for each subcommand parsing
+Lightweight C++ command line Subcommand (Verbs) Parser it use [cxxopts](https://github.com/jarro2783/cxxopts) for each subcommand parsing.
+
 The design was inspire by this [C# library](https://github.com/commandlineparser/commandline)
 
 ## Design
