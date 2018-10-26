@@ -1,6 +1,6 @@
 # cxxsubs
 
-Small Module to create Subcommand (Verbs) in use [cxxopts](https://github.com/catchorg/Clara) for each subcommand parsing
+Lightweight C++ command line Subcommand (Verbs) Parser it use [cxxopts](https://github.com/jarro2783/cxxopts) for each subcommand parsing
 The design was inspire by this [C# library](https://github.com/commandlineparser/commandline)
 
 ## Design
@@ -43,9 +43,10 @@ public:
 ```
 
 C++ Main:
+
 ```cpp
 int main(int argc, char *argv[]) {
-    cxxsubs::Verbs<OptionsInit, OptionsDevAdd> my_cli_parser;
+    cxxsubs::Verbs<OptionsInit> my_cli_parser;
     my_cli_parser.parse();
 }
 ```
