@@ -24,12 +24,12 @@ public:
   }
 
   void validate() {
-    if (this->parsing_result->count("help")) {
+    if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
 
-    if (this->parsing_result->count("name") < 1) {
+    if (this->parse_result->count("name") < 1) {
       std::cout << "Error: parsing options: require atleast one <name>" << std::endl;
       exit(1);
     }
@@ -38,8 +38,8 @@ public:
   void exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
-    if ((*this->parsing_result).count("name")) {
-      for (auto &&i : (*this->parsing_result)["name"].as<std::vector<std::string>>()) {
+    if ((*this->parse_result).count("name")) {
+      for (auto &&i : (*this->parse_result)["name"].as<std::vector<std::string>>()) {
         std::cout << "name :" << i << std::endl;
       }
     }
@@ -68,12 +68,12 @@ public:
   }
 
   void validate() {
-    if (this->parsing_result->count("help")) {
+    if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
 
-    if (!this->parsing_result->count("x") || !this->parsing_result->count("y")) {
+    if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
       exit(1);
     }
@@ -82,8 +82,8 @@ public:
   void exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
-    std::cout << "x :" << (*this->parsing_result)["x"].as<int>() << std::endl;
-    std::cout << "y :" << (*this->parsing_result)["y"].as<int>() << std::endl;
+    std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
+    std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
   };
 };
 
@@ -111,12 +111,12 @@ public:
   }
 
   void validate() {
-    if (this->parsing_result->count("help")) {
+    if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
 
-    if (!this->parsing_result->count("name") || !this->parsing_result->count("x") || !this->parsing_result->count("y")) {
+    if (!this->parse_result->count("name") || !this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <name>, <x> or <y>" << std::endl;
       exit(1);
     }
@@ -125,9 +125,9 @@ public:
   void exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
-    std::cout << "name :" << (*this->parsing_result)["name"].as<std::string>() << std::endl;
-    std::cout << "x :" << (*this->parsing_result)["x"].as<int>() << std::endl;
-    std::cout << "y :" << (*this->parsing_result)["y"].as<int>() << std::endl;
+    std::cout << "name :" << (*this->parse_result)["name"].as<std::string>() << std::endl;
+    std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
+    std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
   };
 };
 
@@ -158,17 +158,17 @@ public:
   }
 
   void validate() {
-    if (this->parsing_result->count("help")) {
+    if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
 
-    if (!this->parsing_result->count("x") || !this->parsing_result->count("y")) {
+    if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
       exit(1);
     }
 
-    if (this->parsing_result->count("moored") && this->parsing_result->count("drifting")) {
+    if (this->parse_result->count("moored") && this->parse_result->count("drifting")) {
       std::cout << "Error: parsing options: drifting and moored are exclusived option" << std::endl;
       exit(1);
     }
@@ -177,10 +177,10 @@ public:
   void exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
-    std::cout << "x :" << (*this->parsing_result)["x"].as<int>() << std::endl;
-    std::cout << "y :" << (*this->parsing_result)["y"].as<int>() << std::endl;
-    std::cout << "moored :" << this->parsing_result->count("moored") << std::endl;
-    std::cout << "drifting :" << this->parsing_result->count("drifting") << std::endl;
+    std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
+    std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
+    std::cout << "moored :" << this->parse_result->count("moored") << std::endl;
+    std::cout << "drifting :" << this->parse_result->count("drifting") << std::endl;
   };
 };
 
@@ -206,12 +206,12 @@ public:
   }
 
   void validate() {
-    if (this->parsing_result->count("help")) {
+    if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
 
-    if (!this->parsing_result->count("x") || !this->parsing_result->count("y")) {
+    if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
       exit(1);
     }
@@ -220,8 +220,8 @@ public:
   void exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
-    std::cout << "x :" << (*this->parsing_result)["x"].as<int>() << std::endl;
-    std::cout << "y :" << (*this->parsing_result)["y"].as<int>() << std::endl;
+    std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
+    std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
   };
 };
 

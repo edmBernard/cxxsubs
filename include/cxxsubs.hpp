@@ -96,7 +96,7 @@ public:
     if (this->match(argc, argv)) {
       int tmp_argc = argc - verbs.size();
       char **tmp_argv = argv + verbs.size();
-      this->parsing_result =
+      this->parse_result =
           std::make_unique<cxxopts::ParseResult>(this->options.parse(tmp_argc, tmp_argv));
       this->validate();
     }
@@ -117,7 +117,7 @@ protected:
   std::vector<std::string> verbs;
   std::string description;
   cxxopts::Options options = cxxopts::Options(this->get_verbs(), this->description);
-  std::unique_ptr<cxxopts::ParseResult> parsing_result;
+  std::unique_ptr<cxxopts::ParseResult> parse_result;
 };
 
 
