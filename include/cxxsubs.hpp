@@ -70,18 +70,20 @@ struct execute_options {
 struct get_verbs_options {
   template <typename T>
   std::string operator()(T &&t, int argc, char *argv[]) {
-    return t.get_verbs();
+    return t.get_verbs() + " : " + t.get_desc();
   }
 };
 
 } // namespace functors
+
 
 //! Interface for Options Parser.
 //!
 //!
 class IOptions {
 public:
-  IOptions() {
+  IOptions(std::vector<std::string> verbs, std::string description = "")
+      : verbs(verbs), description(description) {
   }
   ~IOptions() {
   }
@@ -95,7 +97,7 @@ public:
       int tmp_argc = argc - verbs.size();
       char **tmp_argv = argv + verbs.size();
       this->parsing_result =
-          std::make_unique<cxxopts::ParseResult>(this->options->parse(tmp_argc, tmp_argv));
+          std::make_unique<cxxopts::ParseResult>(this->options.parse(tmp_argc, tmp_argv));
       this->validate();
     }
   }
@@ -107,9 +109,14 @@ public:
     return utils::join(this->verbs, " ");
   }
 
+  std::string get_desc() {
+    return this->description;
+  }
+
 protected:
   std::vector<std::string> verbs;
-  std::unique_ptr<cxxopts::Options> options;
+  std::string description;
+  cxxopts::Options options = cxxopts::Options(this->get_verbs(), this->description);
   std::unique_ptr<cxxopts::ParseResult> parsing_result;
 };
 
@@ -123,7 +130,12 @@ template <typename FirstOptionsTypes, typename... OptionsTypes>
 class Verbs {
 public:
   Verbs(int argc, char *argv[]) {
-    this->parse(argc, argv);
+    try {
+      this->parse(argc, argv);
+    } catch (const cxxopts::OptionException &e) {
+      std::cout << "Error: parsing options: " << e.what() << std::endl;
+      exit(1);
+    }
   }
 
   void parse(int argc, char *argv[]) {
@@ -151,6 +163,5 @@ private:
 };
 
 } // namespace cxxsubs
-
 
 #endif // !OPTIONS_INTERFACE_HPP_
