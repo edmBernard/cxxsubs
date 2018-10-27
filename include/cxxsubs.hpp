@@ -42,13 +42,13 @@ bool match(std::vector<std::string> verbs, int argc, char *argv[]) {
 }
 
 template <typename T, std::size_t... Indices, typename Function>
-auto for_each_impl(T &&t, std::index_sequence<Indices...>, Function &&f, int argc, char *argv[]) -> std::vector<decltype(f(std::get<0>(t), argc, argv))> {
-  return {f(std::get<Indices>(t), argc, argv)...};
+auto for_each_impl(T &&t, std::index_sequence<Indices...>, Function &&f) -> std::vector<decltype(f(std::get<0>(t)))> {
+  return {f(std::get<Indices>(t))...};
 }
 
 template <typename... Types, typename Function>
-auto for_each(std::tuple<Types...> &t, Function &&f, int argc, char *argv[]) {
-  return for_each_impl(t, std::index_sequence_for<Types...>(), f, argc, argv);
+auto for_each(std::tuple<Types...> &t, Function &&f) {
+  return for_each_impl(t, std::index_sequence_for<Types...>(), f);
 }
 
 } // namespace utils
@@ -57,10 +57,16 @@ auto for_each(std::tuple<Types...> &t, Function &&f, int argc, char *argv[]) {
 namespace functors {
 
 struct execute_options {
+  execute_options(int argc, char *argv[]) : argc(argc) {
+    this->argv = argv;
+  }
+  int argc;
+  char **argv;
+
   template <typename T>
-  bool operator()(T &&t, int argc, char *argv[]) {
-    if (t.match(argc, argv)) {
-      t.parse(argc, argv);
+  bool operator()(T &&t) {
+    if (t.match(this->argc, this->argv)) {
+      t.parse(this->argc, this->argv);
       t.exec();
       return true;
     }
@@ -70,14 +76,14 @@ struct execute_options {
 
 struct get_verbs_options {
   template <typename T>
-  std::string operator()(T &&t, int argc, char *argv[]) {
+  std::string operator()(T &&t) {
     return t.get_verbs();
   }
 };
 
 struct get_description_options {
   template <typename T>
-  std::string operator()(T &&t, int argc, char *argv[]) {
+  std::string operator()(T &&t) {
     return t.get_desc();
   }
 };
@@ -192,13 +198,13 @@ public:
   }
 
   void parse(int argc, char *argv[]) {
-    auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options(), argc, argv);
-    auto descriptions_list = utils::for_each(this->parsers, functors::get_description_options(), argc, argv);
+    auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options());
+    auto descriptions_list = utils::for_each(this->parsers, functors::get_description_options());
 
     // inject all verb list in Completion Command
     std::get<0>(this->parsers).set_verbs_list(verbs_list);
 
-    auto ret = utils::for_each(this->parsers, functors::execute_options(), argc, argv);
+    auto ret = utils::for_each(this->parsers, functors::execute_options(argc, argv));
 
     // Check if at least an options has match
     bool has_match = false;
