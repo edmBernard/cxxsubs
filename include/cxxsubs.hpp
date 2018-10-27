@@ -15,6 +15,7 @@
 #define OPTIONS_INTERFACE_HPP_
 
 #include "cxxopts.hpp"
+#include <iomanip>
 
 namespace cxxsubs {
 
@@ -211,7 +212,7 @@ public:
     if (!has_match) {
       std::cout << "Available command: " << std::endl;
       for (std::size_t i = 0; i < verbs_list.size(); ++i) {
-        std::cout << "    - " << verbs_list[i] << " : " << descriptions_list[i] << std::endl;
+        std::cout << "    - " << std::left << std::setw(20) << verbs_list[i] << descriptions_list[i] << std::endl;
       }
     }
   }
