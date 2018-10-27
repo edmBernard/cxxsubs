@@ -141,14 +141,16 @@ public:
   void parse(int argc, char *argv[]) {
     auto ret = utils::for_each(this->parsers, functors::execute_options(), argc, argv);
 
-    int count = 0;
+    // Check if at least an options has match
+    bool has_match = false;
     for (auto &&i : ret) {
       if (i) {
-        ++count;
+        has_match = true;
       }
     }
 
-    if (count == 0) {
+    // If no option match show help
+    if (!has_match) {
       std::cout << "Available command: " << std::endl;
       auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options(), argc, argv);
       for (auto &&i : verbs_list) {
