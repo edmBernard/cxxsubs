@@ -70,7 +70,14 @@ struct execute_options {
 struct get_verbs_options {
   template <typename T>
   std::string operator()(T &&t, int argc, char *argv[]) {
-    return t.get_verbs() + " : " + t.get_desc();
+    return t.get_verbs();
+  }
+};
+
+struct get_description_options {
+  template <typename T>
+  std::string operator()(T &&t, int argc, char *argv[]) {
+    return t.get_desc();
   }
 };
 
@@ -121,6 +128,51 @@ protected:
 };
 
 
+class CompletionCommand : public cxxsubs::IOptions {
+public:
+  CompletionCommand()
+      : cxxsubs::IOptions({"completion"}, "Completion Command for bash") {
+
+    // clang-format off
+    this->options.add_options()
+      ("verbs", "verbs list for each command", cxxopts::value<std::vector<std::string>>())
+      ("help", "Print help");
+
+    // clang-format on
+    options.parse_positional({"verbs"});
+
+  }
+
+  void validate() {
+    if (this->parse_result->count("help")) {
+      std::cout << this->options.help({""}) << std::endl;
+      exit(0);
+    }
+  }
+
+  void exec() {
+    std::cout << "command : " << this->get_verbs() << std::endl;
+    if ((*this->parse_result).count("verbs")) {
+      for (auto &&i : (*this->parse_result)["verbs"].as<std::vector<std::string>>()) {
+        std::cout << "verbs :" << i << std::endl;
+      }
+    }
+
+    std::cout << "Others :" << std::endl;
+
+    for (auto &&i : this->other_verbs_list) {
+      std::cout << "verbs :" << i << std::endl;
+    }
+  };
+
+  void set_verbs_list(std::vector<std::string> verbs) {
+    this->other_verbs_list = verbs;
+  }
+private:
+  std::vector<std::string> other_verbs_list;
+};
+
+
 //! Subcommand Parser.
 //!
 //! \tparam FirstOptionsTypes  Used to force at least one argument in template
@@ -139,6 +191,12 @@ public:
   }
 
   void parse(int argc, char *argv[]) {
+    auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options(), argc, argv);
+    auto descriptions_list = utils::for_each(this->parsers, functors::get_description_options(), argc, argv);
+
+    // inject all verb list in Completion Command
+    std::get<0>(this->parsers).set_verbs_list(verbs_list);
+
     auto ret = utils::for_each(this->parsers, functors::execute_options(), argc, argv);
 
     // Check if at least an options has match
@@ -152,15 +210,14 @@ public:
     // If no option match show help
     if (!has_match) {
       std::cout << "Available command: " << std::endl;
-      auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options(), argc, argv);
-      for (auto &&i : verbs_list) {
-        std::cout << "    - " << i << std::endl;
+      for (std::size_t i = 0; i < verbs_list.size(); ++i) {
+        std::cout << "    - " << verbs_list[i] << " : " << descriptions_list[i] << std::endl;
       }
     }
   }
 
 private:
-  std::tuple<FirstOptionsTypes, OptionsTypes...> parsers;
+  std::tuple<CompletionCommand, FirstOptionsTypes, OptionsTypes...> parsers;
   std::size_t length = sizeof...(OptionsTypes) + 1;
 };
 
