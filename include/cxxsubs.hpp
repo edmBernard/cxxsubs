@@ -22,7 +22,7 @@ namespace cxxsubs {
 
 namespace utils {
 
-std::string join(const std::vector<std::string> &tokens, const std::string &delimiter) {
+inline std::string join(const std::vector<std::string> &tokens, const std::string &delimiter) {
   std::stringstream stream;
   stream << tokens.front();
   std::for_each(begin(tokens) + 1, end(tokens),
@@ -30,7 +30,24 @@ std::string join(const std::vector<std::string> &tokens, const std::string &deli
   return stream.str();
 }
 
-bool match(std::vector<std::string> verbs, int argc, char *argv[]) {
+inline std::vector<std::string> split(std::string const &original, char separator) {
+  std::vector<std::string> results;
+  std::string::const_iterator start = original.begin();
+  std::string::const_iterator end = original.end();
+  std::string::const_iterator next = std::find(start, end, separator);
+
+  while (next != end) {
+    results.push_back(std::string(start, next));
+    start = next + 1;
+    next = std::find(start, end, separator);
+  }
+
+  results.push_back(std::string(start, next));
+
+  return results;
+}
+
+inline bool match(std::vector<std::string> verbs, int argc, char *argv[]) {
   if (std::size_t(argc - 1) < verbs.size()) {
     return false;
   }
