@@ -4,6 +4,8 @@ Basic C++ Subcommand/Verbs support for command line. It use [cxxopts](https://gi
 
 The design was inspire by this [C# library](https://github.com/commandlineparser/commandline)
 
+Code is available on github [cxxsubs](https://github.com/edmBernard/cxxsubs)
+
 ## Design
 
 
@@ -82,6 +84,7 @@ navel_fate mine remove <x> <y>
 ```
 *idea from the [docopt library](http://docopt.org/)*
 
+## Requirements
 
-
-
+- [cxxsubs](https://github.com/edmBernard/cxxsubs) depend on [cxxopts](https://github.com/jarro2783/cxxopts).
+- The only build requirement is a C++ compiler that supports C++14 regular expressions and some variadic template feature (std::index_sequence). For example GCC >= 5.5 works with c++14 options.

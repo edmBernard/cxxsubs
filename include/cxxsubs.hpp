@@ -1,7 +1,7 @@
 //
 //  cxxsubs
 //
-//  github.com/ebernard
+//  https://github.com/edmBernard/cxxsubs
 //
 //  Created by Erwan BERNARD on 23/10/2018.
 //

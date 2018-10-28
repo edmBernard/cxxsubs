@@ -1,3 +1,15 @@
+//
+//  cxxsubs
+//
+//  https://github.com/edmBernard/cxxsubs
+//
+//  Created by Erwan BERNARD on 23/10/2018.
+//
+//  Copyright (c) 2018 Erwan BERNARD. All rights reserved.
+//  Distributed under the Apache License, Version 2.0. (See accompanying
+//  file LICENSE or copy at http://www.apache.org/licenses/LICENSE-2.0)
+//
+
 #include "cxxsubs.hpp"
 #include <string>
 #include <vector>
