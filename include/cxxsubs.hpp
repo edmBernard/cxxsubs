@@ -16,7 +16,7 @@
 
 #include "cxxopts.hpp"
 #include <iomanip>
-
+#include <regex>
 
 namespace cxxsubs {
 
@@ -124,6 +124,7 @@ public:
     // clang-format off
     this->options.add_options()
       ("verbs", "verbs list for each command", cxxopts::value<std::vector<std::string>>())
+      ("show", "show completion code to add in bashrc", cxxopts::value<bool>())
       ("help", "Print help");
 
     // clang-format on
@@ -139,23 +140,44 @@ public:
   }
 
   void exec() {
-    std::cout << "command : " << this->get_verbs() << std::endl;
-    if ((*this->parse_result).count("verbs")) {
-      for (auto &&i : (*this->parse_result)["verbs"].as<std::vector<std::string>>()) {
-        std::cout << "verbs :" << i << std::endl;
+    if ((*this->parse_result).count("show")) {
+      std::cout << "# replace XXXXX by an alias, replace YYYYY by you executable name\n"
+                   "_XXXXX_completions() {\n"
+                   "local cur_word args type_list\n"
+                   "cur_word=\"${COMP_WORDS[COMP_CWORD]}\"\n"
+                   "args=(\"${COMP_WORDS[@]}\")\n"
+
+                   "type_list=$(YYYYY completion \"${args[@]:1}\")\n"
+                   "COMPREPLY=( $(compgen -W \"${type_list}\" -- ${cur_word}) )\n"
+                   "# if no match was found, fall back to filename completion\n"
+                   "if [ ${#COMPREPLY[@]} -eq 0 ]; then\n"
+                   "COMPREPLY=( $(compgen -f -- \"${cur_word}\" ) )\n"
+                   "fi\n"
+                   "return 0\n"
+                   "}\n"
+                   "complete -F _XXXXX_completions YYYYY"
+                << std::endl;
+    } else {
+
+      for (auto &&i : this->other_verbs_list) {
+        if ((*this->parse_result).count("verbs")) {
+          std::regex patterns(utils::join((*this->parse_result)["verbs"].as<std::vector<std::string>>(), " ") + ".*");
+          std::smatch pieces_match;
+          if (std::regex_match(i, pieces_match, patterns)) {
+            std::cout << i << std::endl;
+          }
+        } else {
+          // this part is never used in real case autocompetion pass empty string so there is a verb
+          std::cout << utils::split(i, ' ')[0] << std::endl;
+        }
       }
-    }
-
-    std::cout << "Others :" << std::endl;
-
-    for (auto &&i : this->other_verbs_list) {
-      std::cout << "verbs :" << i << std::endl;
     }
   };
 
   void set_verbs_list(std::vector<std::string> verbs) {
     this->other_verbs_list = verbs;
   }
+
 private:
   std::vector<std::string> other_verbs_list;
 };
@@ -164,7 +186,8 @@ private:
 namespace functors {
 
 struct execute_options {
-  execute_options(int argc, char *argv[]) : argc(argc) {
+  execute_options(int argc, char *argv[])
+      : argc(argc) {
     this->argv = argv;
   }
   int argc;
@@ -196,7 +219,9 @@ struct get_description_options {
 };
 
 struct set_completions {
-  set_completions(std::vector<std::string> verbs_list) : verbs_list(verbs_list) {}
+  set_completions(std::vector<std::string> verbs_list)
+      : verbs_list(verbs_list) {
+  }
   std::vector<std::string> verbs_list;
 
   template <typename T>
@@ -207,7 +232,7 @@ struct set_completions {
 
 // Specialize set completion for Completion Command class
 template <>
-bool set_completions::operator()<CompletionCommand&>(CompletionCommand &t) {
+bool set_completions::operator()<CompletionCommand &>(CompletionCommand &t) {
   t.set_verbs_list(verbs_list);
   return true;
 }
