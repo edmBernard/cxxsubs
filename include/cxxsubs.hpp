@@ -71,7 +71,6 @@ auto for_each(std::tuple<Types...> &t, Function &&f) {
 
 } // namespace utils
 
-
 //! Interface for Options Parser.
 //!
 //!
@@ -115,7 +114,6 @@ protected:
   std::unique_ptr<cxxopts::ParseResult> parse_result;
 };
 
-
 class CompletionCommand : public cxxsubs::IOptions {
 public:
   CompletionCommand()
@@ -129,7 +127,6 @@ public:
 
     // clang-format on
     options.parse_positional({"verbs"});
-
   }
 
   void validate() {
@@ -180,7 +177,6 @@ public:
 private:
   std::vector<std::string> other_verbs_list;
 };
-
 
 namespace functors {
 
@@ -237,7 +233,6 @@ bool set_completions::operator()<CompletionCommand &>(CompletionCommand &t) {
 }
 
 } // namespace functors
-
 
 //! Subcommand Parser.
 //!

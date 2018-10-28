@@ -46,7 +46,6 @@ public:
   };
 };
 
-
 class OptionsShipShoot : public cxxsubs::IOptions {
 public:
   OptionsShipShoot()
@@ -86,7 +85,6 @@ public:
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
   };
 };
-
 
 class OptionsShipMove : public cxxsubs::IOptions {
 public:
@@ -131,7 +129,6 @@ public:
   };
 };
 
-
 class OptionsMineSet : public cxxsubs::IOptions {
 public:
   OptionsMineSet()
@@ -154,7 +151,6 @@ public:
     // clang-format on
 
     options.parse_positional({"x", "y"});
-
   }
 
   void validate() {
@@ -183,7 +179,6 @@ public:
     std::cout << "drifting :" << this->parse_result->count("drifting") << std::endl;
   };
 };
-
 
 class OptionsMineRemove : public cxxsubs::IOptions {
 public:
@@ -224,7 +219,6 @@ public:
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
   };
 };
-
 
 int main(int argc, char *argv[]) {
   cxxsubs::Verbs<cxxsubs::CompletionCommand, OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);

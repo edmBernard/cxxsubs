@@ -7,10 +7,16 @@ The design was inspire by this [C# library](https://github.com/commandlineparser
 ## Design
 
 
+## Some interesting feature
+
+- Completion script, you can add special `cxxsubs::CompletionCommand` which will add completion command for bash (cf. [`example.cpp`](src/example.cpp))
+
+
 ## Known limitations
 
 - No Real Help message
 - Subcommand can overlap (ex: `ship new`, `ship`). The `ship new` command will also execute `ship` command.
+
 
 
 ## Quick start Example
