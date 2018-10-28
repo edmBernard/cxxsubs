@@ -88,3 +88,11 @@ navel_fate mine remove <x> <y>
 
 - [cxxsubs](https://github.com/edmBernard/cxxsubs) depend on [cxxopts](https://github.com/jarro2783/cxxopts).
 - The only build requirement is a C++ compiler that supports C++14 regular expressions and some variadic template feature (std::index_sequence). For example GCC >= 5.5 works with c++14 options.
+
+## Documentation generation
+
+from `build` folder
+```bash
+doxygen ../doc/config_file
+```
+The Documentaion will be generated in `build/html`
