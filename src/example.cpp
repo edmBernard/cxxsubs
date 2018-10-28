@@ -227,5 +227,5 @@ public:
 
 
 int main(int argc, char *argv[]) {
-  cxxsubs::Verbs<OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);
+  cxxsubs::Verbs<cxxsubs::CompletionCommand, OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);
 }

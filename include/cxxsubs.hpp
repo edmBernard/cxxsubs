@@ -17,6 +17,7 @@
 #include "cxxopts.hpp"
 #include <iomanip>
 
+
 namespace cxxsubs {
 
 namespace utils {
@@ -52,43 +53,6 @@ auto for_each(std::tuple<Types...> &t, Function &&f) {
 }
 
 } // namespace utils
-
-
-namespace functors {
-
-struct execute_options {
-  execute_options(int argc, char *argv[]) : argc(argc) {
-    this->argv = argv;
-  }
-  int argc;
-  char **argv;
-
-  template <typename T>
-  bool operator()(T &&t) {
-    if (t.match(this->argc, this->argv)) {
-      t.parse(this->argc, this->argv);
-      t.exec();
-      return true;
-    }
-    return false;
-  }
-};
-
-struct get_verbs_options {
-  template <typename T>
-  std::string operator()(T &&t) {
-    return t.get_verbs();
-  }
-};
-
-struct get_description_options {
-  template <typename T>
-  std::string operator()(T &&t) {
-    return t.get_desc();
-  }
-};
-
-} // namespace functors
 
 
 //! Interface for Options Parser.
@@ -180,6 +144,60 @@ private:
 };
 
 
+namespace functors {
+
+struct execute_options {
+  execute_options(int argc, char *argv[]) : argc(argc) {
+    this->argv = argv;
+  }
+  int argc;
+  char **argv;
+
+  template <typename T>
+  bool operator()(T &&t) {
+    if (t.match(this->argc, this->argv)) {
+      t.parse(this->argc, this->argv);
+      t.exec();
+      return true;
+    }
+    return false;
+  }
+};
+
+struct get_verbs_options {
+  template <typename T>
+  std::string operator()(T &&t) {
+    return t.get_verbs();
+  }
+};
+
+struct get_description_options {
+  template <typename T>
+  std::string operator()(T &&t) {
+    return t.get_desc();
+  }
+};
+
+struct set_completions {
+  set_completions(std::vector<std::string> verbs_list) : verbs_list(verbs_list) {}
+  std::vector<std::string> verbs_list;
+
+  template <typename T>
+  bool operator()(T &&t) {
+    return false;
+  }
+};
+
+// Specialize set completion for Completion Command class
+template <>
+bool set_completions::operator()<CompletionCommand&>(CompletionCommand &t) {
+  t.set_verbs_list(verbs_list);
+  return true;
+}
+
+} // namespace functors
+
+
 //! Subcommand Parser.
 //!
 //! \tparam FirstOptionsTypes  Used to force at least one argument in template
@@ -202,8 +220,9 @@ public:
     auto descriptions_list = utils::for_each(this->parsers, functors::get_description_options());
 
     // inject all verb list in Completion Command
-    std::get<0>(this->parsers).set_verbs_list(verbs_list);
+    utils::for_each(this->parsers, functors::set_completions(verbs_list));
 
+    // execute all Parser
     auto ret = utils::for_each(this->parsers, functors::execute_options(argc, argv));
 
     // Check if at least an options has match
@@ -224,7 +243,7 @@ public:
   }
 
 private:
-  std::tuple<CompletionCommand, FirstOptionsTypes, OptionsTypes...> parsers;
+  std::tuple<FirstOptionsTypes, OptionsTypes...> parsers;
   std::size_t length = sizeof...(OptionsTypes) + 1;
 };
 
