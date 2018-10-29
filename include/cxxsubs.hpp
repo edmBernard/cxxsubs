@@ -123,6 +123,7 @@ public:
     this->options.add_options()
       ("verbs", "verbs list for each command", cxxopts::value<std::vector<std::string>>())
       ("show", "show completion code to add in bashrc", cxxopts::value<bool>())
+      ("exec_name", "the executable name to add in completion script", cxxopts::value<std::string>())
       ("help", "Print help");
 
     // clang-format on
@@ -134,16 +135,21 @@ public:
       std::cout << this->options.help({""}) << std::endl;
       exit(0);
     }
+
+    if (this->parse_result->count("show") ^ this->parse_result->count("exec_name")) {
+      std::cout << "Error: parsing options: 'show' and 'exec_name' must be filled" << std::endl;
+      exit(1);
+    }
   }
 
   void exec() {
-    if ((*this->parse_result).count("show")) {
-      std::cout << "# replace XXXXX by an alias, replace YYYYY by you executable name\n"
-                   "_XXXXX_completions() {\n"
+    if (this->parse_result->count("show")) {
+      std::string my_name = (*this->parse_result)["exec_name"].as<std::string>();
+      std::cout << "_" + my_name +"_completions() {\n"
                    "  local cur_word args type_list\n"
                    "  cur_word=\"${COMP_WORDS[COMP_CWORD]}\"\n"
                    "  args=(\"${COMP_WORDS[@]}\")\n\n"
-                   "  type_list=$(YYYYY completion \"${args[@]:1}\")\n"
+                   "  type_list=$(" + my_name +" completion \"${args[@]:1}\")\n"
                    "  COMPREPLY=( $(compgen -W \"${type_list}\" -- ${cur_word}) )\n\n"
                    "  # if no match was found, fall back to filename completion\n"
                    "  if [ ${#COMPREPLY[@]} -eq 0 ]; then\n"
@@ -151,7 +157,7 @@ public:
                    "  fi\n"
                    "  return 0\n"
                    "}\n"
-                   "complete -F _XXXXX_completions YYYYY"
+                   "complete -F _" + my_name + "_completions " + my_name
                 << std::endl;
     } else {
 
