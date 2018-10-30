@@ -149,7 +149,7 @@ public:
                    "  local cur_word args type_list\n"
                    "  cur_word=\"${COMP_WORDS[COMP_CWORD]}\"\n"
                    "  args=(\"${COMP_WORDS[@]}\")\n\n"
-                   "  type_list=$(" + my_name +" completion \"${args[@]:1}\")\n"
+                   "  type_list=$(" + my_name +" completion ${args[@]:1})\n"
                    "  COMPREPLY=( $(compgen -W \"${type_list}\" -- ${cur_word}) )\n\n"
                    "  # if no match was found, fall back to filename completion\n"
                    "  if [ ${#COMPREPLY[@]} -eq 0 ]; then\n"
