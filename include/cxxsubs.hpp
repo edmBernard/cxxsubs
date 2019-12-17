@@ -233,7 +233,7 @@ struct set_completions {
 
 // Specialize set completion for Completion Command class
 template <>
-bool set_completions::operator()<CompletionCommand &>(CompletionCommand &t) {
+inline bool set_completions::operator()<CompletionCommand &>(CompletionCommand &t) {
   t.set_verbs_list(verbs_list);
   return true;
 }
