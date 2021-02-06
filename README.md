@@ -86,7 +86,7 @@ navel_fate mine remove <x> <y>
 
 ## Requirements
 
-- [cxxsubs](https://github.com/edmBernard/cxxsubs) depend on [cxxopts](https://github.com/jarro2783/cxxopts).
+- [cxxsubs](https://github.com/edmBernard/cxxsubs) depends on [cxxopts](https://github.com/jarro2783/cxxopts).
 - The only build requirement is a C++ compiler that supports C++14 regular expressions and some variadic template feature (std::index_sequence). For example GCC >= 5.5 works with c++14 options.
 
 ## Documentation and examples generation
@@ -100,4 +100,3 @@ make docs
 ```
 
 Example programs (`example` and `quickstart`) are located in build folder. The Documentaion will be generated in `doc/html/index.html`.
-
