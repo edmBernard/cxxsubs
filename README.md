@@ -20,7 +20,6 @@ Code is available on github [cxxsubs](https://github.com/edmBernard/cxxsubs)
 - Subcommand can overlap (ex: `ship new`, `ship`). The `ship new` command will also execute `ship` command.
 
 
-
 ## Quick start Example
 
 1. Create separate option classes for each verb. Class have to work like IOptions.
