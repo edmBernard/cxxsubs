@@ -69,7 +69,6 @@ auto for_each(std::tuple<Types...> &t, Function &&f) {
 
 } // namespace utils
 
-
 namespace functors {
 
 struct execute_options {
@@ -81,13 +80,18 @@ struct execute_options {
   char **argv;
 
   template <typename T>
-  bool operator()(T &&t) {
+  std::tuple<bool, int> operator()(T &&t) {
     if (t.match(this->argc, this->argv)) {
-      t.parse(this->argc, this->argv);
-      t.exec();
-      return true;
+      // Parse argument if return is not a success early return
+      int retParse = t.parse(this->argc, this->argv);
+      if (retParse != EXIT_SUCCESS) {
+        return {true, retParse};
+      }
+      // Execute command
+      int retExec = t.exec();
+      return {true, retExec};
     }
-    return false;
+    return {false, EXIT_SUCCESS};
   }
 };
 
@@ -119,9 +123,8 @@ struct set_completions {
 
 } // namespace functors
 
-
 template <typename FirstOptionsTypes, typename... OptionsTypes>
-class Verbs;  // Early declaration
+int Verbs(int argc, char *argv[]); // Early declaration
 
 //! Interface for Options Parser.
 //!
@@ -135,11 +138,37 @@ public:
   }
 
   //! Function called for parameters validation
-  virtual void validate() = 0;
-
+  [[nodiscard]] virtual int validate() = 0;
 
   //! Function that contain execution
-  virtual void exec() = 0;
+  [[nodiscard]] virtual int exec() = 0;
+
+private:
+  template <typename FirstOptionsTypes, typename... OptionsTypes>
+  friend int Verbs(int argc, char *argv[]);
+
+  //! Functor use to process all options, there need access to private member
+  friend class functors::execute_options;
+  friend class functors::get_verbs_options;
+  friend class functors::get_description_options;
+
+  bool match(int argc, char *argv[]) {
+    return utils::match(this->verbs, argc, argv);
+  }
+
+  virtual int parse(int argc, char *argv[]) {
+    if (this->match(argc, argv)) {
+      int tmp_argc = argc - verbs.size();
+      char **tmp_argv = argv + verbs.size();
+      this->parse_result =
+          std::make_unique<cxxopts::ParseResult>(this->options.parse(tmp_argc, tmp_argv));
+      return this->validate();
+    }
+    return EXIT_SUCCESS;
+  }
+
+  std::vector<std::string> verbs;
+  std::string description;
 
 protected:
   //! Get the verb of this option
@@ -154,35 +183,7 @@ protected:
 
   cxxopts::Options options = cxxopts::Options(this->get_verbs(), this->description);
   std::unique_ptr<cxxopts::ParseResult> parse_result;
-
-private:
-
-  template <typename FirstOptionsTypes, typename... OptionsTypes>
-  friend class Verbs;
-
-  //! Functor use to process all options, there need access to private member
-  friend class functors::execute_options;
-  friend class functors::get_verbs_options;
-  friend class functors::get_description_options;
-
-  bool match(int argc, char *argv[]) {
-    return utils::match(this->verbs, argc, argv);
-  }
-
-  virtual void parse(int argc, char *argv[]) {
-    if (this->match(argc, argv)) {
-      int tmp_argc = argc - verbs.size();
-      char **tmp_argv = argv + verbs.size();
-      this->parse_result =
-          std::make_unique<cxxopts::ParseResult>(this->options.parse(tmp_argc, tmp_argv));
-      this->validate();
-    }
-  }
-
-  std::vector<std::string> verbs;
-  std::string description;
 };
-
 
 class CompletionCommand : public cxxsubs::IOptions {
 public:
@@ -200,34 +201,37 @@ public:
     options.parse_positional({"verbs"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (this->parse_result->count("show") ^ this->parse_result->count("exec_name")) {
       std::cout << "Error: parsing options: 'show' and 'exec_name' must be filled" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     if (this->parse_result->count("show")) {
       std::string my_name = (*this->parse_result)["exec_name"].as<std::string>();
-      std::cout << "_" + my_name +"_completions() {\n"
-                   "  local cur_word args type_list\n"
-                   "  cur_word=\"${COMP_WORDS[COMP_CWORD]}\"\n"
-                   "  args=(\"${COMP_WORDS[@]}\")\n\n"
-                   "  type_list=$(" + my_name +" completion ${args[@]:1})\n"
-                   "  COMPREPLY=( $(compgen -W \"${type_list}\" -- ${cur_word}) )\n\n"
-                   "  # if no match was found, fall back to filename completion\n"
-                   "  if [ ${#COMPREPLY[@]} -eq 0 ]; then\n"
-                   "    COMPREPLY=( $(compgen -f -- \"${cur_word}\" ) )\n"
-                   "  fi\n"
-                   "  return 0\n"
-                   "}\n"
-                   "complete -F _" + my_name + "_completions " + my_name
+      std::cout << "_" + my_name + "_completions() {\n"
+                                   "  local cur_word args type_list\n"
+                                   "  cur_word=\"${COMP_WORDS[COMP_CWORD]}\"\n"
+                                   "  args=(\"${COMP_WORDS[@]}\")\n\n"
+                                   "  type_list=$(" +
+                       my_name + " completion ${args[@]:1})\n"
+                                 "  COMPREPLY=( $(compgen -W \"${type_list}\" -- ${cur_word}) )\n\n"
+                                 "  # if no match was found, fall back to filename completion\n"
+                                 "  if [ ${#COMPREPLY[@]} -eq 0 ]; then\n"
+                                 "    COMPREPLY=( $(compgen -f -- \"${cur_word}\" ) )\n"
+                                 "  fi\n"
+                                 "  return 0\n"
+                                 "}\n"
+                                 "complete -F _" +
+                       my_name + "_completions " + my_name
                 << std::endl;
     } else {
 
@@ -244,6 +248,7 @@ public:
         }
       }
     }
+    return EXIT_SUCCESS;
   };
 
   void set_verbs_list(std::vector<std::string> verbs) {
@@ -271,47 +276,44 @@ inline bool set_completions::operator()<CompletionCommand &>(CompletionCommand &
 //! \tparam OptionsTypes  Other template arguments
 //!
 template <typename FirstOptionsTypes, typename... OptionsTypes>
-class Verbs {
-public:
-  Verbs(int argc, char *argv[]) {
-    try {
-      this->parse(argc, argv);
-    } catch (const cxxopts::OptionException &e) {
-      std::cout << "Error: parsing options: " << e.what() << std::endl;
-      exit(1);
-    }
-  }
+int Verbs(int argc, char *argv[]) {
+  try {
+    std::tuple<FirstOptionsTypes, OptionsTypes...> parsers;
+    std::size_t length = sizeof...(OptionsTypes) + 1;
 
-  void parse(int argc, char *argv[]) {
-    auto verbs_list = utils::for_each(this->parsers, functors::get_verbs_options());
-    auto descriptions_list = utils::for_each(this->parsers, functors::get_description_options());
+    auto verbs_list = utils::for_each(parsers, functors::get_verbs_options());
+    auto descriptions_list = utils::for_each(parsers, functors::get_description_options());
 
     // inject all verb list in Completion Command
-    utils::for_each(this->parsers, functors::set_completions(verbs_list));
+    utils::for_each(parsers, functors::set_completions(verbs_list));
 
     // execute all Parser
-    auto ret = utils::for_each(this->parsers, functors::execute_options(argc, argv));
+    auto ret = utils::for_each(parsers, functors::execute_options(argc, argv));
 
     // Check if at least an options has match
     bool has_match = false;
-    for (auto &&i : ret) {
-      if (i) {
+    int returnCode = EXIT_SUCCESS;
+    for (auto &[retMatch, retExec] : ret) {
+      if (retMatch) {
         has_match = true;
+        returnCode = retExec;
       }
+    }
+
+    if (has_match) {
+      return returnCode;
     }
 
     // If no option match show help
-    if (!has_match) {
-      std::cout << "Available command: " << std::endl;
-      for (std::size_t i = 0; i < verbs_list.size(); ++i) {
-        std::cout << "    - " << std::left << std::setw(20) << verbs_list[i] << descriptions_list[i] << std::endl;
-      }
+    std::cout << "Available command: " << std::endl;
+    for (std::size_t i = 0; i < verbs_list.size(); ++i) {
+      std::cout << "    - " << std::left << std::setw(20) << verbs_list[i] << descriptions_list[i] << std::endl;
     }
-  }
 
-private:
-  std::tuple<FirstOptionsTypes, OptionsTypes...> parsers;
-  std::size_t length = sizeof...(OptionsTypes) + 1;
-};
+  } catch (const cxxopts::OptionException &e) {
+    std::cout << "Error: parsing options: " << e.what() << std::endl;
+  }
+  return EXIT_FAILURE;
+}
 
 } // namespace cxxsubs

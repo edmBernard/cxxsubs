@@ -25,25 +25,29 @@ public:
       ("help", "Print help");
   }
 
-  void validate() {
+  int validate() {
     // Validate parsing result : check help options, check rule between option (exclusivity etc ...)
     // cxxopts::Options is accessible with this->options
     // cxxopts::ParseResult is accessible with this->parse_result (warning it's a pointer)
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      // We must return FAILURE otherwise exec member will be executed
+      return EXIT_FAILURE;
     }
+    // If we return Success the exec function will be executed
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     // Execute what you want
     // cxxopts::Options is accessible with this->options
     // cxxopts::ParseResult is accessible with this->parse_result (warning it's a pointer)
     std::cout << "command : " << this->get_verbs() << std::endl;
     std::cout << "module : " << (*this->parse_result)["module"].as<std::string>() << std::endl;
+    return EXIT_SUCCESS;
   };
 };
 
 int main(int argc, char *argv[]) {
-  cxxsubs::Verbs<OptionsInit>(argc, argv);
+  return cxxsubs::Verbs<OptionsInit>(argc, argv);
 }

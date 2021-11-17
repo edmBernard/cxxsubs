@@ -34,19 +34,20 @@ public:
     options.parse_positional({"name"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (this->parse_result->count("name") < 1) {
       std::cout << "Error: parsing options: require atleast one <name>" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
     if ((*this->parse_result).count("name")) {
@@ -54,6 +55,7 @@ public:
         std::cout << "name :" << i << std::endl;
       }
     }
+    return EXIT_SUCCESS;
   };
 };
 
@@ -77,23 +79,25 @@ public:
     options.parse_positional({"x", "y"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
     std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
+    return EXIT_SUCCESS;
   };
 };
 
@@ -119,24 +123,27 @@ public:
     options.parse_positional({"name", "x", "y"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (!this->parse_result->count("name") || !this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <name>, <x> or <y>" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
+
   }
 
-  void exec() {
+  int exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
     std::cout << "name :" << (*this->parse_result)["name"].as<std::string>() << std::endl;
     std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
+    return EXIT_SUCCESS;
   };
 };
 
@@ -164,30 +171,32 @@ public:
     options.parse_positional({"x", "y"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
 
     if (this->parse_result->count("moored") && this->parse_result->count("drifting")) {
       std::cout << "Error: parsing options: drifting and moored are exclusived option" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
     std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
     std::cout << "moored :" << this->parse_result->count("moored") << std::endl;
     std::cout << "drifting :" << this->parse_result->count("drifting") << std::endl;
+    return EXIT_SUCCESS;
   };
 };
 
@@ -211,26 +220,28 @@ public:
     options.parse_positional({"x", "y"});
   }
 
-  void validate() {
+  int validate() {
     if (this->parse_result->count("help")) {
       std::cout << this->options.help({""}) << std::endl;
-      exit(0);
+      return EXIT_FAILURE;
     }
 
     if (!this->parse_result->count("x") || !this->parse_result->count("y")) {
       std::cout << "Error: parsing options: missing <x> or <y>" << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
   }
 
-  void exec() {
+  int exec() {
     std::cout << "command : " << this->get_verbs() << std::endl;
 
     std::cout << "x :" << (*this->parse_result)["x"].as<int>() << std::endl;
     std::cout << "y :" << (*this->parse_result)["y"].as<int>() << std::endl;
+    return EXIT_SUCCESS;
   };
 };
 
 int main(int argc, char *argv[]) {
-  cxxsubs::Verbs<cxxsubs::CompletionCommand, OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);
+  return cxxsubs::Verbs<cxxsubs::CompletionCommand, OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);
 }
