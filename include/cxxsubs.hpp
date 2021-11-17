@@ -11,8 +11,6 @@
 //
 
 #pragma once
-#ifndef OPTIONS_INTERFACE_HPP_
-#define OPTIONS_INTERFACE_HPP_
 
 #include "cxxopts.hpp"
 #include <iomanip>
@@ -71,6 +69,60 @@ auto for_each(std::tuple<Types...> &t, Function &&f) {
 
 } // namespace utils
 
+
+namespace functors {
+
+struct execute_options {
+  execute_options(int argc, char *argv[])
+      : argc(argc) {
+    this->argv = argv;
+  }
+  int argc;
+  char **argv;
+
+  template <typename T>
+  bool operator()(T &&t) {
+    if (t.match(this->argc, this->argv)) {
+      t.parse(this->argc, this->argv);
+      t.exec();
+      return true;
+    }
+    return false;
+  }
+};
+
+struct get_verbs_options {
+  template <typename T>
+  std::string operator()(T &&t) {
+    return t.get_verbs();
+  }
+};
+
+struct get_description_options {
+  template <typename T>
+  std::string operator()(T &&t) {
+    return t.get_desc();
+  }
+};
+
+struct set_completions {
+  set_completions(std::vector<std::string> verbs_list)
+      : verbs_list(verbs_list) {
+  }
+  std::vector<std::string> verbs_list;
+
+  template <typename T>
+  bool operator()(T &&t) {
+    return false;
+  }
+};
+
+} // namespace functors
+
+
+template <typename FirstOptionsTypes, typename... OptionsTypes>
+class Verbs;  // Early declaration
+
 //! Interface for Options Parser.
 //!
 //!
@@ -81,6 +133,37 @@ public:
   }
   ~IOptions() {
   }
+
+  //! Function called for parameters validation
+  virtual void validate() = 0;
+
+
+  //! Function that contain execution
+  virtual void exec() = 0;
+
+protected:
+  //! Get the verb of this option
+  std::string get_verbs() {
+    return utils::join(this->verbs, " ");
+  }
+
+  //! Get the description of this option
+  std::string get_desc() {
+    return this->description;
+  }
+
+  cxxopts::Options options = cxxopts::Options(this->get_verbs(), this->description);
+  std::unique_ptr<cxxopts::ParseResult> parse_result;
+
+private:
+
+  template <typename FirstOptionsTypes, typename... OptionsTypes>
+  friend class Verbs;
+
+  //! Functor use to process all options, there need access to private member
+  friend class functors::execute_options;
+  friend class functors::get_verbs_options;
+  friend class functors::get_description_options;
 
   bool match(int argc, char *argv[]) {
     return utils::match(this->verbs, argc, argv);
@@ -96,23 +179,10 @@ public:
     }
   }
 
-  virtual void validate() = 0;
-  virtual void exec() = 0;
-
-  std::string get_verbs() {
-    return utils::join(this->verbs, " ");
-  }
-
-  std::string get_desc() {
-    return this->description;
-  }
-
-protected:
   std::vector<std::string> verbs;
   std::string description;
-  cxxopts::Options options = cxxopts::Options(this->get_verbs(), this->description);
-  std::unique_ptr<cxxopts::ParseResult> parse_result;
 };
+
 
 class CompletionCommand : public cxxsubs::IOptions {
 public:
@@ -186,51 +256,6 @@ private:
 
 namespace functors {
 
-struct execute_options {
-  execute_options(int argc, char *argv[])
-      : argc(argc) {
-    this->argv = argv;
-  }
-  int argc;
-  char **argv;
-
-  template <typename T>
-  bool operator()(T &&t) {
-    if (t.match(this->argc, this->argv)) {
-      t.parse(this->argc, this->argv);
-      t.exec();
-      return true;
-    }
-    return false;
-  }
-};
-
-struct get_verbs_options {
-  template <typename T>
-  std::string operator()(T &&t) {
-    return t.get_verbs();
-  }
-};
-
-struct get_description_options {
-  template <typename T>
-  std::string operator()(T &&t) {
-    return t.get_desc();
-  }
-};
-
-struct set_completions {
-  set_completions(std::vector<std::string> verbs_list)
-      : verbs_list(verbs_list) {
-  }
-  std::vector<std::string> verbs_list;
-
-  template <typename T>
-  bool operator()(T &&t) {
-    return false;
-  }
-};
-
 // Specialize set completion for Completion Command class
 template <>
 inline bool set_completions::operator()<CompletionCommand &>(CompletionCommand &t) {
@@ -290,5 +315,3 @@ private:
 };
 
 } // namespace cxxsubs
-
-#endif // !OPTIONS_INTERFACE_HPP_
