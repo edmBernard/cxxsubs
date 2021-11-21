@@ -45,7 +45,7 @@ inline std::vector<std::string> split(std::string const &original, char separato
   return results;
 }
 
-inline bool match(std::vector<std::string> verbs, int argc, char *argv[]) {
+inline bool match(std::vector<std::string> verbs, int argc, const char * const *argv) {
   if (std::size_t(argc - 1) < verbs.size()) {
     return false;
   }
@@ -72,12 +72,11 @@ auto for_each(std::tuple<Types...> &t, Function &&f) {
 namespace functors {
 
 struct execute_options {
-  execute_options(int argc, char *argv[])
-      : argc(argc) {
-    this->argv = argv;
+  execute_options(const int argc, const char * const *argv)
+      : argc(argc), argv(argv) {
   }
   int argc;
-  char **argv;
+  const char * const*argv;
 
   template <typename T>
   std::tuple<bool, int> operator()(T &&t) {
@@ -124,7 +123,7 @@ struct set_completions {
 } // namespace functors
 
 template <typename FirstOptionsTypes, typename... OptionsTypes>
-int Verbs(int argc, char *argv[]); // Early declaration
+int Verbs(int argc, const char * const *argv); // Early declaration
 
 //! Interface for Options Parser.
 //!
@@ -145,21 +144,21 @@ public:
 
 private:
   template <typename FirstOptionsTypes, typename... OptionsTypes>
-  friend int Verbs(int argc, char *argv[]);
+  friend int Verbs(int argc, const char * const *argv);
 
   //! Functor use to process all options, there need access to private member
   friend class functors::execute_options;
   friend class functors::get_verbs_options;
   friend class functors::get_description_options;
 
-  bool match(int argc, char *argv[]) {
+  bool match(int argc, const char * const *argv) {
     return utils::match(this->verbs, argc, argv);
   }
 
-  virtual int parse(int argc, char *argv[]) {
+  virtual int parse(int argc, const char * const *argv) {
     if (this->match(argc, argv)) {
       int tmp_argc = argc - verbs.size();
-      char **tmp_argv = argv + verbs.size();
+      const char * const *tmp_argv = argv + verbs.size();
       this->parse_result =
           std::make_unique<cxxopts::ParseResult>(this->options.parse(tmp_argc, tmp_argv));
       return this->validate();
@@ -276,7 +275,7 @@ inline bool set_completions::operator()<CompletionCommand &>(CompletionCommand &
 //! \tparam OptionsTypes  Other template arguments
 //!
 template <typename FirstOptionsTypes, typename... OptionsTypes>
-int Verbs(int argc, char *argv[]) {
+int Verbs(const int argc, const char * const *argv) {
   try {
     std::tuple<FirstOptionsTypes, OptionsTypes...> parsers;
     std::size_t length = sizeof...(OptionsTypes) + 1;

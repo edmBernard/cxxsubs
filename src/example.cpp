@@ -242,6 +242,6 @@ public:
   };
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char * argv[]) {
   return cxxsubs::Verbs<cxxsubs::CompletionCommand, OptionsShipNew, OptionsShipMove, OptionsShipShoot, OptionsMineSet, OptionsMineRemove>(argc, argv);
 }
